@@ -75,8 +75,17 @@ const AssistantMessage = (props: AssistantMessageProps) => {
     const isThinking = typeof parsed === "string" && parsed.includes("<think>");
 
     if (isThinking) {
-      // Skip setting document to avoid infinite loop
-      return null;
+      return (
+        <div className="flex flex-col gap-2 p-3 rounded bg-yellow-50/50">
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <Brain className="w-4 h-4" />
+            <span className="font-mono">Chain of Thought</span>
+          </div>
+          <div className="text-sm font-medium pl-6 text-gray-800">
+            {parsed.replace(/<think>|<\/think>/g, "")}
+          </div>
+        </div>
+      );
     }
 
     // Handle plain text/think format
