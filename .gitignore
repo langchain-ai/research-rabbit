@@ -1,0 +1,12 @@
+.langgraph_api/*
+ollama_deep_researcher.egg-info/dependency_links.txt
+ollama_deep_researcher.egg-info/PKG-INFO
+ollama_deep_researcher.egg-info/requires.txt
+ollama_deep_researcher.egg-info/SOURCES.txt
+ollama_deep_researcher.egg-info/top_level.txt
+src/assistant/__pycache__/__init__.cpython-311.pyc
+src/assistant/__pycache__/configuration.cpython-311.pyc
+src/assistant/__pycache__/graph.cpython-311.pyc
+src/assistant/__pycache__/prompts.cpython-311.pyc
+src/assistant/__pycache__/state.cpython-311.pyc
+src/assistant/__pycache__/utils.cpython-311.pyc
