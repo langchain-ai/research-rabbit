@@ -4,3 +4,9 @@
 
 # Pycache
 *__pycache__*
+
+# Virtual environment
+.venv
+
+# Ollama things
+ollama_deep_researcher.egg-info
