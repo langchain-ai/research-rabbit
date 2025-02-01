@@ -1,0 +1,66 @@
+Metadata-Version: 2.1
+Name: langchain-ollama
+Version: 0.2.3
+Summary: An integration package connecting Ollama and LangChain
+Home-page: https://github.com/langchain-ai/langchain
+License: MIT
+Requires-Python: >=3.9,<4.0
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Programming Language :: Python :: 3.13
+Requires-Dist: langchain-core (>=0.3.33,<0.4.0)
+Requires-Dist: ollama (>=0.4.4,<1)
+Project-URL: Repository, https://github.com/langchain-ai/langchain
+Project-URL: Release Notes, https://github.com/langchain-ai/langchain/releases?q=tag%3A%22langchain-ollama%3D%3D0%22&expanded=true
+Project-URL: Source Code, https://github.com/langchain-ai/langchain/tree/master/libs/partners/ollama
+Description-Content-Type: text/markdown
+
+# langchain-ollama
+
+This package contains the LangChain integration with Ollama
+
+## Installation
+
+```bash
+pip install -U langchain-ollama
+```
+
+You will also need to run the Ollama server locally. 
+You can download it [here](https://ollama.com/download).
+
+## Chat Models
+
+`ChatOllama` class exposes chat models from Ollama.
+
+```python
+from langchain_ollama import ChatOllama
+
+llm = ChatOllama(model="llama3-groq-tool-use")
+llm.invoke("Sing a ballad of LangChain.")
+```
+
+## Embeddings
+
+`OllamaEmbeddings` class exposes embeddings from Ollama.
+
+```python
+from langchain_ollama import OllamaEmbeddings
+
+embeddings = OllamaEmbeddings(model="llama3")
+embeddings.embed_query("What is the meaning of life?")
+```
+
+## LLMs
+`OllamaLLM` class exposes LLMs from Ollama.
+
+```python
+from langchain_ollama import OllamaLLM
+
+llm = OllamaLLM(model="llama3")
+llm.invoke("The meaning of life is")
+```
+

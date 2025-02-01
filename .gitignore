@@ -1,0 +1,6 @@
+
+# Environment vars file 
+.env
+
+# Pycache
+*__pycache__*
