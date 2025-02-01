@@ -1,3 +1,0 @@
-[pytest11]
-langsmith_plugin=langsmith.pytest_plugin
-
