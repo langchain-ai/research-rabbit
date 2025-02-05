@@ -1,8 +1,9 @@
 import os
 import requests
-from typing import Dict, Any
+from typing import Dict, Any, List, Optional
 from langsmith import traceable
 from tavily import TavilyClient
+from duckduckgo_search import DDGS
 
 def deduplicate_and_format_sources(search_response, max_tokens_per_source, include_raw_content=False):
     """
@@ -70,6 +71,66 @@ def format_sources(search_results):
         f"* {source['title']} : {source['url']}"
         for source in search_results['results']
     )
+
+@traceable
+def duckduckgo_search(query: str, max_results: int = 3, fetch_full_page: bool = False) -> Dict[str, List[Dict[str, str]]]:
+    """Search the web using DuckDuckGo.
+    
+    Args:
+        query (str): The search query to execute
+        max_results (int): Maximum number of results to return
+        
+    Returns:
+        dict: Search response containing:
+            - results (list): List of search result dictionaries, each containing:
+                - title (str): Title of the search result
+                - url (str): URL of the search result
+                - content (str): Snippet/summary of the content
+                - raw_content (str): Same as content since DDG doesn't provide full page content
+    """
+    try:
+        with DDGS() as ddgs:
+            results = []
+            search_results = list(ddgs.text(query, max_results=max_results))
+            
+            for r in search_results:
+                url = r.get('href')
+                title = r.get('title')
+                content = r.get('body')
+                
+                if not all([url, title, content]):
+                    print(f"Warning: Incomplete result from DuckDuckGo: {r}")
+                    continue
+
+                raw_content = content
+                if fetch_full_page:
+                    try:
+                        # Try to fetch the full page content using curl
+                        import urllib.request
+                        from bs4 import BeautifulSoup
+
+                        response = urllib.request.urlopen(url)
+                        html = response.read()
+                        soup = BeautifulSoup(html, 'html.parser')
+                        raw_content = soup.get_text()
+                        
+                    except Exception as e:
+                        print(f"Warning: Failed to fetch full page content for {url}: {str(e)}")
+                
+                # Add result to list
+                result = {
+                    "title": title,
+                    "url": url,
+                    "content": content,
+                    "raw_content": raw_content
+                }
+                results.append(result)
+            
+            return {"results": results}
+    except Exception as e:
+        print(f"Error in DuckDuckGo search: {str(e)}")
+        print(f"Full error details: {type(e).__name__}")
+        return {"results": []}
 
 @traceable
 def tavily_search(query, include_raw_content=True, max_results=3):

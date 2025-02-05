@@ -10,13 +10,15 @@ from enum import Enum
 class SearchAPI(Enum):
     PERPLEXITY = "perplexity"
     TAVILY = "tavily"
+    DUCKDUCKGO = "duckduckgo"
 
 @dataclass(kw_only=True)
 class Configuration:
     """The configurable fields for the research assistant."""
     max_web_research_loops: int = 3
     local_llm: str = "llama3.2"
-    search_api: SearchAPI = SearchAPI.TAVILY  # Default to TAVILY
+    search_api: SearchAPI = SearchAPI.DUCKDUCKGO  # Default to DUCDUCKGO
+    fetch_full_page: bool = False  # Default to False
 
     @classmethod
     def from_runnable_config(

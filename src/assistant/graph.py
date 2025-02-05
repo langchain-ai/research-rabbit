@@ -8,7 +8,7 @@ from langchain_ollama import ChatOllama
 from langgraph.graph import START, END, StateGraph
 
 from assistant.configuration import Configuration, SearchAPI
-from assistant.utils import deduplicate_and_format_sources, tavily_search, format_sources, perplexity_search
+from assistant.utils import deduplicate_and_format_sources, tavily_search, format_sources, perplexity_search, duckduckgo_search
 from assistant.state import SummaryState, SummaryStateInput, SummaryStateOutput
 from assistant.prompts import query_writer_instructions, summarizer_instructions, reflection_instructions
 
@@ -51,6 +51,9 @@ def web_research(state: SummaryState, config: RunnableConfig):
     elif search_api == "perplexity":
         search_results = perplexity_search(state.search_query, state.research_loop_count)
         search_str = deduplicate_and_format_sources(search_results, max_tokens_per_source=1000, include_raw_content=False)
+    elif search_api == "duckduckgo":
+        search_results = duckduckgo_search(state.search_query, max_results=3, fetch_full_page=configurable.fetch_full_page)
+        search_str = deduplicate_and_format_sources(search_results, max_tokens_per_source=1000, include_raw_content=True)
     else:
         raise ValueError(f"Unsupported search API: {configurable.search_api}")
         

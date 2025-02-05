@@ -13,6 +13,8 @@ dependencies = [
     "langchain-community>=0.3.9",
     "tavily-python>=0.5.0",
     "langchain-ollama>=0.2.1",
+    "duckduckgo-search>=7.3.0",
+    "beautifulsoup4>=4.13.3",
 ]
 
 [project.optional-dependencies]
