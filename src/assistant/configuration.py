@@ -17,6 +17,7 @@ class Configuration:
     max_web_research_loops: int = 3
     local_llm: str = "llama3.2"
     search_api: SearchAPI = SearchAPI.TAVILY  # Default to TAVILY
+    ollama_base_url: str = "http://localhost:11434/"
 
     @classmethod
     def from_runnable_config(

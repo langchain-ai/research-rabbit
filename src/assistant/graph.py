@@ -12,28 +12,28 @@ from assistant.utils import deduplicate_and_format_sources, tavily_search, forma
 from assistant.state import SummaryState, SummaryStateInput, SummaryStateOutput
 from assistant.prompts import query_writer_instructions, summarizer_instructions, reflection_instructions
 
-# Nodes   
+# Nodes
 def generate_query(state: SummaryState, config: RunnableConfig):
     """ Generate a query for web search """
-    
+
     # Format the prompt
     query_writer_instructions_formatted = query_writer_instructions.format(research_topic=state.research_topic)
 
     # Generate a query
     configurable = Configuration.from_runnable_config(config)
-    llm_json_mode = ChatOllama(model=configurable.local_llm, temperature=0, format="json")
+    llm_json_mode = ChatOllama(base_url=configurable.ollama_base_url, model=configurable.local_llm, temperature=0, format="json")
     result = llm_json_mode.invoke(
         [SystemMessage(content=query_writer_instructions_formatted),
         HumanMessage(content=f"Generate a query for web search:")]
-    )   
+    )
     query = json.loads(result.content)
-    
+
     return {"search_query": query['query']}
 
 def web_research(state: SummaryState, config: RunnableConfig):
     """ Gather information from the web """
-    
-    # Configure 
+
+    # Configure
     configurable = Configuration.from_runnable_config(config)
 
     # Handle both cases for search_api:
@@ -53,12 +53,12 @@ def web_research(state: SummaryState, config: RunnableConfig):
         search_str = deduplicate_and_format_sources(search_results, max_tokens_per_source=1000, include_raw_content=False)
     else:
         raise ValueError(f"Unsupported search API: {configurable.search_api}")
-        
+
     return {"sources_gathered": [format_sources(search_results)], "research_loop_count": state.research_loop_count + 1, "web_research_results": [search_str]}
 
 def summarize_sources(state: SummaryState, config: RunnableConfig):
     """ Summarize the gathered sources """
-    
+
     # Existing summary
     existing_summary = state.running_summary
 
@@ -80,7 +80,7 @@ def summarize_sources(state: SummaryState, config: RunnableConfig):
 
     # Run the LLM
     configurable = Configuration.from_runnable_config(config)
-    llm = ChatOllama(model=configurable.local_llm, temperature=0)
+    llm = ChatOllama(base_url=configurable.ollama_base_url, model=configurable.local_llm, temperature=0)
     result = llm.invoke(
         [SystemMessage(content=summarizer_instructions),
         HumanMessage(content=human_message_content)]
@@ -88,8 +88,8 @@ def summarize_sources(state: SummaryState, config: RunnableConfig):
 
     running_summary = result.content
 
-    # TODO: This is a hack to remove the <think> tags w/ Deepseek models 
-    # It appears very challenging to prompt them out of the responses 
+    # TODO: This is a hack to remove the <think> tags w/ Deepseek models
+    # It appears very challenging to prompt them out of the responses
     while "<think>" in running_summary and "</think>" in running_summary:
         start = running_summary.find("<think>")
         end = running_summary.find("</think>") + len("</think>")
@@ -102,11 +102,11 @@ def reflect_on_summary(state: SummaryState, config: RunnableConfig):
 
     # Generate a query
     configurable = Configuration.from_runnable_config(config)
-    llm_json_mode = ChatOllama(model=configurable.local_llm, temperature=0, format="json")
+    llm_json_mode = ChatOllama(base_url=configurable.ollama_base_url, model=configurable.local_llm, temperature=0, format="json")
     result = llm_json_mode.invoke(
         [SystemMessage(content=reflection_instructions.format(research_topic=state.research_topic)),
         HumanMessage(content=f"Identify a knowledge gap and generate a follow-up web search query based on our existing knowledge: {state.running_summary}")]
-    )   
+    )
     follow_up_query = json.loads(result.content)
 
     # Get the follow-up query
@@ -123,7 +123,7 @@ def reflect_on_summary(state: SummaryState, config: RunnableConfig):
 
 def finalize_summary(state: SummaryState):
     """ Finalize the summary """
-    
+
     # Format all accumulated sources into a single bulleted list
     all_sources = "\n".join(source for source in state.sources_gathered)
     state.running_summary = f"## Summary\n\n{state.running_summary}\n\n ### Sources:\n{all_sources}"
@@ -136,9 +136,9 @@ def route_research(state: SummaryState, config: RunnableConfig) -> Literal["fina
     if state.research_loop_count <= configurable.max_web_research_loops:
         return "web_research"
     else:
-        return "finalize_summary" 
-    
-# Add nodes and edges 
+        return "finalize_summary"
+
+# Add nodes and edges
 builder = StateGraph(SummaryState, input=SummaryStateInput, output=SummaryStateOutput, config_schema=Configuration)
 builder.add_node("generate_query", generate_query)
 builder.add_node("web_research", web_research)
